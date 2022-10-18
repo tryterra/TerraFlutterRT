@@ -126,7 +126,7 @@ public class SwiftTerraFlutterRtPlugin: NSObject, FlutterPlugin {
 		}
   }
 
-  private func startBluetoothScan(connection: String, result: @escaping FlutterResult){
+  private func startBluetoothScan(result: @escaping FlutterResult){
 		if terraRT != nil {
       // todo: show BLE SwiftUI screen on iOS
       result(true)
