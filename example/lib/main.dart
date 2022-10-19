@@ -51,7 +51,7 @@ class _MyAppState extends State<MyApp> {
     var request = http.Request(
         'POST',
         Uri.parse(
-            'https://ws.tryterra.co/auth/user?id=66fbb25f-e1d2-44d1-bc4d-6b4844bd0928'));
+            'https://ws.tryterra.co/auth/user?id=<USER ID>'));
 
     request.headers.addAll(headers);
     http.StreamedResponse response = await request.send();
@@ -63,20 +63,15 @@ class _MyAppState extends State<MyApp> {
     }
 
     // Real-time
-    print("Entering TerraRT");
     await TerraFlutterRt.init();
-    print("Initialised");
     await TerraFlutterRt.initConnection(connection);
     if (connection == Connection.ble || connection == Connection.wearOs)
       print(await TerraFlutterRt.startBluetoothScan(connection));
     if (connection == Connection.ant)
       print(await TerraFlutterRt.startAntPlusScan());
-    print("Connected");
     print(await TerraFlutterRt.startRealtime(connection, token, datatypes));
-    print("Should be streaming");
     await Future.delayed(const Duration(seconds: 5));
     await TerraFlutterRt.stopRealtime(connection);
-    print("Should've stopped streaming");
     await TerraFlutterRt.disconnect(connection);
     if (!mounted) return;
 
