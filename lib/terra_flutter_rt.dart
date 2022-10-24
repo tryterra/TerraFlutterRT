@@ -190,13 +190,18 @@ class TerraFlutterRt {
   }
 
   static Future<bool?> startBluetoothScan(Connection connection) async {
+    bool? output;
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
-        return await _iOSScanController._channel.invokeMethod(
+        output = await _iOSScanController._channel.invokeMethod(
             'startBluetoothScan', {"connection": connection.connectionString});
+        await Future.delayed(const Duration(seconds: 1));
+        return output;
       case TargetPlatform.android:
-        return await _channel.invokeMethod(
+        output = await _channel.invokeMethod(
             'startBluetoothScan', {"connection": connection.connectionString});
+        await Future.delayed(const Duration(seconds: 1));
+        return output;
       default:
         return false;
     }
