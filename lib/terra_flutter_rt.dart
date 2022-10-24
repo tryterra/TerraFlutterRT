@@ -210,7 +210,6 @@ class TerraFlutterRt {
   static Future<dynamic> myUtilsHandler(MethodCall methodCall) async {
     switch (methodCall.method) {
       case 'update':
-        print('Update got called');
         if (_callback != null) {
           _callback!(methodCall.arguments);
         }

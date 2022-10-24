@@ -41,7 +41,6 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
     binaryMessenger messenger: FlutterBinaryMessenger
   ) {
     mainview = UIView()
-    print("Creating method channel")
     _methodChannel = FlutterMethodChannel(name: "terra_flutter_rt_\(viewId)", binaryMessenger: messenger)
     super.init()
     _methodChannel.setMethodCallHandler(onMethodCall)
@@ -123,7 +122,6 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
   ){
     let c = connectionParse(connection: connection)
 		if c != nil && terraRT != nil {
-      print("Should be streaming now to server for \(connection) and \(datatypeSet(datatypes: datatypes))")
       terraRT!.startRealtime(type: c!, dataType: datatypeSet(datatypes: datatypes), token: token)
       result(true)
 		} else {
@@ -142,7 +140,6 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
   ){
     let c = connectionParse(connection: connection)
 		if c != nil && terraRT != nil {
-      print("Should be streaming now in app for \(connection) and \(datatypeSet(datatypes: datatypes))")
       terraRT!.startRealtime(type: c!, dataType: datatypeSet(datatypes: datatypes)){
         update in self.callChannel(update: update)
       }
@@ -189,7 +186,6 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
       // todo: show BLE SwiftUI screen on iOS
       let child = UIHostingController(rootView: terraRT!.startBluetoothScan(type: .BLE, callback: {
       success in
-        print("GOT SUCCESS THING HERE")
         // if let viewWithTag = self.mainview.viewWithTag(100) {
         //   print("Removing")
         //   viewWithTag.removeFromSuperview()
@@ -212,13 +208,9 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
 
   private func callChannel(update: Update){
     do {
-      print("attempting json parsing")
       let jsonData = try JSONEncoder().encode(update)
       let data = String(data: jsonData, encoding: .utf8) ?? ""
-      print("Sending data to app: \(data)")
-      _methodChannel.invokeMethod("update", arguments: data, result: {(r:Any?) -> () in
-        print(type(of: r))
-      })
+      _methodChannel.invokeMethod("update", arguments: data)
     }
     catch {
       print("Could not parse json")
@@ -236,14 +228,12 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
         result("iOS " + UIDevice.current.systemVersion)
         break;
       case "init":
-        print("Initialising")
         terraRT = TerraRT(
           devId: args["devId"] as! String,
           referenceId: args["referenceId"] as? String ?? ""
         ){
           success in 
             result(success)
-            print("Initialised")
         }
         break;
       case "initConnection":
