@@ -3,6 +3,8 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:terra_flutter_rt/terra_flutter_rt.dart';
+import 'package:terra_flutter_rt/types.dart';
+import 'package:terra_flutter_rt/ios_controller.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -11,9 +13,12 @@ void main() {
   runApp(const MyApp());
 }
 
-void dataCallback(String data) {
+void dataCallback(Update data) {
   print("Got data in app");
-  print(data);
+  print(data.ts);
+  print(data.type.datatypeString);
+  print(data.val);
+  print(data.d);
 }
 
 class MyApp extends StatefulWidget {

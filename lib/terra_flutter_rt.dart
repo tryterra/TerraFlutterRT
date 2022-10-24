@@ -1,83 +1,13 @@
-// ignore_for_file: camel_case_types
-
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
+import 'package:terra_flutter_rt/types.dart';
+import 'package:terra_flutter_rt/ios_controller.dart';
 
-// streaming connections
-enum Connection { ble, apple, wearOs, android, ant }
-
-extension ConnectionExtension on Connection {
-  String get connectionString {
-    switch (this) {
-      case Connection.android:
-        return 'ANDROID';
-      case Connection.ant:
-        return 'ANT';
-      case Connection.apple:
-        return 'APPLE';
-      case Connection.ble:
-        return 'BLE';
-      case Connection.wearOs:
-        return 'WEAR_OS';
-      default:
-        return 'UNDEFINED';
-    }
-  }
-}
-
-// streaming data types
-enum DataType {
-  heartRate,
-  ecg,
-  steps,
-  hrv,
-  calories,
-  location,
-  speed,
-  distance,
-  stepsCadence,
-  floorsClimbed,
-  gyroscope,
-  acceleration
-}
-
-extension DataTypeExtension on DataType {
-  String get datatypeString {
-    switch (this) {
-      case DataType.heartRate:
-        return "HEART_RATE";
-      case DataType.ecg:
-        return "ECG";
-      case DataType.steps:
-        return "STEPS";
-      case DataType.hrv:
-        return "HRV";
-      case DataType.calories:
-        return "CALORIES";
-      case DataType.location:
-        return "LOCATION";
-      case DataType.speed:
-        return "SPEED";
-      case DataType.distance:
-        return "DISTANCE";
-      case DataType.stepsCadence:
-        return "STEPS_CADENCE";
-      case DataType.floorsClimbed:
-        return "FLOORS_CLIMBED";
-      case DataType.gyroscope:
-        return "GYROSCOPE";
-      case DataType.acceleration:
-        return "ACCELERATION";
-      default:
-        return 'UNDEFINED';
-    }
-  }
-}
-
-typedef UpdateCallback = void Function(String);
+typedef UpdateCallback = void Function(Update);
+final iOSScanController _iOSScanController = iOSScanController.init(0);
 
 class TerraFlutterRt {
   static UpdateCallback? _callback;
@@ -86,7 +16,7 @@ class TerraFlutterRt {
   static Future<String?> get platformVersion async {
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
-        return await _iOSScanController._channel
+        return await _iOSScanController.channel
             .invokeMethod('getPlatformVersion', {});
       case TargetPlatform.android:
         return await _channel.invokeMethod('getPlatformVersion', {});
@@ -97,10 +27,10 @@ class TerraFlutterRt {
 
   static Future<bool?> init(String devId, String? referenceId) async {
     _channel.setMethodCallHandler(myUtilsHandler);
-    _iOSScanController._channel.setMethodCallHandler(myUtilsHandler);
+    _iOSScanController.channel.setMethodCallHandler(myUtilsHandler);
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
-        return await _iOSScanController._channel
+        return await _iOSScanController.channel
             .invokeMethod('init', {"devId": devId, "referenceId": referenceId});
       case TargetPlatform.android:
         return await _channel
@@ -113,7 +43,7 @@ class TerraFlutterRt {
   static Future<bool?> initConnection(String token) async {
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
-        return await _iOSScanController._channel
+        return await _iOSScanController.channel
             .invokeMethod('initConnection', {"token": token});
       case TargetPlatform.android:
         return await _channel.invokeMethod('initConnection', {"token": token});
@@ -126,7 +56,7 @@ class TerraFlutterRt {
       Connection connection, List<DataType> types, String token) async {
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
-        return await _iOSScanController._channel
+        return await _iOSScanController.channel
             .invokeMethod('startRealtimeToServer', {
           "connection": connection.connectionString,
           "token": token,
@@ -148,7 +78,7 @@ class TerraFlutterRt {
     _callback = callback;
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
-        return await _iOSScanController._channel
+        return await _iOSScanController.channel
             .invokeMethod('startRealtimeToApp', {
           "connection": connection.connectionString,
           "datatypes": types.map((t) => t.datatypeString).toList()
@@ -166,7 +96,7 @@ class TerraFlutterRt {
   static Future<bool?> stopRealtime(Connection connection) async {
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
-        return await _iOSScanController._channel.invokeMethod(
+        return await _iOSScanController.channel.invokeMethod(
             'stopRealtime', {"connection": connection.connectionString});
       case TargetPlatform.android:
         return await _channel.invokeMethod(
@@ -179,7 +109,7 @@ class TerraFlutterRt {
   static Future<bool?> disconnect(Connection connection) async {
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
-        return await _iOSScanController._channel.invokeMethod(
+        return await _iOSScanController.channel.invokeMethod(
             'disconnect', {"connection": connection.connectionString});
       case TargetPlatform.android:
         return await _channel.invokeMethod(
@@ -193,7 +123,7 @@ class TerraFlutterRt {
     bool? output;
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
-        output = await _iOSScanController._channel.invokeMethod(
+        output = await _iOSScanController.channel.invokeMethod(
             'startBluetoothScan', {"connection": connection.connectionString});
         await Future.delayed(const Duration(seconds: 1));
         return output;
@@ -216,36 +146,13 @@ class TerraFlutterRt {
     switch (methodCall.method) {
       case 'update':
         if (_callback != null) {
-          _callback!(methodCall.arguments);
+          Map<String, dynamic> updateMap = jsonDecode(methodCall.arguments);
+          var update = Update.fromJson(updateMap);
+          _callback!(update);
         }
         return true;
       default:
         throw MissingPluginException('notImplemented');
-    }
-  }
-}
-
-class iOSScanController {
-  iOSScanController._(int id)
-      : _channel = MethodChannel('terra_flutter_rt_$id');
-
-  final MethodChannel _channel;
-}
-
-typedef iOSScanControllerCreatedCallback = void Function(
-    iOSScanController controller);
-
-final iOSScanController _iOSScanController = iOSScanController._(0);
-
-class iOSScanView extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.iOS:
-        return Expanded(child: UiKitView(viewType: 'terra_flutter_rt'));
-
-      default:
-        return Container();
     }
   }
 }

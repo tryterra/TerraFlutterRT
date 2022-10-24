@@ -21,7 +21,11 @@ Import the package in your app file:
 
 ```dart
 import 'package:terra_flutter_rt/terra_flutter_rt.dart';
+import 'package:terra_flutter_rt/types.dart';
+import 'package:terra_flutter_rt/ios_controller.dart';
 ```
+
+The first line is for all the functionality. The types are for the different data types (connections, requested data types, and received data type). The iOS controller is for the iOS scanning controller UI.
 
 Everytime your app opens, you need to initialise the library:
 
@@ -85,8 +89,12 @@ if (connection == Connection.ant) {
 With the device and dataypes set, you can now start streaming. To stream locally in your app directly, you can pass a callback function that will get triggered with the data:
 
 ```dart
-void dataCallback(String data) {
-  print(data);
+void dataCallback(Update data) {
+  print("Got data in app");
+  print(data.ts);
+  print(data.type.datatypeString);
+  print(data.val);
+  print(data.d);
 }
 
 // .......
