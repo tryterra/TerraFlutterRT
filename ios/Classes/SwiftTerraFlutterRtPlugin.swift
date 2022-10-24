@@ -1,15 +1,51 @@
 import Flutter
 import UIKit
 import TerraRTiOS
+import Foundation
+import SwiftUI
 
-public class SwiftTerraFlutterRtPlugin: NSObject, FlutterPlugin {
-  public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "terra_flutter_rt", binaryMessenger: registrar.messenger())
-    let instance = SwiftTerraFlutterRtPlugin()
-    registrar.addMethodCallDelegate(instance, channel: channel)
+class iOSScanViewFactory: NSObject, FlutterPlatformViewFactory {
+  private var messenger: FlutterBinaryMessenger
+
+  init(messenger: FlutterBinaryMessenger) {
+    self.messenger = messenger
+    super.init()
   }
 
-  // terra instance managed
+  func create(
+    withFrame frame: CGRect,
+    viewIdentifier viewId: Int64,
+    arguments args: Any?
+  ) -> FlutterPlatformView {
+    return FlutteriOSScanView(
+      frame: frame,
+      viewIdentifier: viewId,
+      arguments: args,
+      binaryMessenger: messenger)
+  }
+}
+class FlutteriOSScanView: NSObject, FlutterPlatformView {
+  private var _methodChannel: FlutterMethodChannel
+  
+  private var mainview: UIView
+  var scoreLabel = UILabel()
+
+  func view() -> UIView {
+    return mainview
+  }
+  
+  init(
+    frame: CGRect,
+    viewIdentifier viewId: Int64,
+    arguments args: Any?,
+    binaryMessenger messenger: FlutterBinaryMessenger
+  ) {
+    mainview = UIView()
+    _methodChannel = FlutterMethodChannel(name: "terra_flutter_rt_\(viewId)", binaryMessenger: messenger)
+    super.init()
+    _methodChannel.setMethodCallHandler(onMethodCall)
+  }
+
   private var terraRT: TerraRT?
 
   private func connectionParse(connection: String) -> Connections? {
@@ -53,7 +89,6 @@ public class SwiftTerraFlutterRtPlugin: NSObject, FlutterPlugin {
       default:
         return Set([])
       }
-    return Set([])
   }
 
   private func datatypeSet(datatypes: [String]) -> Set<DataTypes> {
@@ -65,15 +100,15 @@ public class SwiftTerraFlutterRtPlugin: NSObject, FlutterPlugin {
   }
 
 
-  private func initConnection(connection: String, result: @escaping FlutterResult){
-    let c = connectionParse(connection: connection)
-		if c != nil && terraRT != nil {
-      terraRT!.initConnection(type: c!)
-      result(true)
+  private func initConnection(token: String, result: @escaping FlutterResult){
+		if terraRT != nil {
+      terraRT!.initConnection(token: token){
+        success in result(true)
+      }
 		} else {
 			result(FlutterError(
 				code: "Connection Type Error",
-				message: "Could not call initConnection. make sure you are passing a valid iOS connection and that terraRT is initialised by calling 'init'",
+				message: "Could not call initConnection. make sure that terraRT is initialised by calling 'init'",
 				details: nil
 			))
 		}
@@ -87,7 +122,27 @@ public class SwiftTerraFlutterRtPlugin: NSObject, FlutterPlugin {
   ){
     let c = connectionParse(connection: connection)
 		if c != nil && terraRT != nil {
-      terraRT!.startRealtime(type: c!, token: token, dataType: datatypeSet(datatypes: datatypes))
+      terraRT!.startRealtime(type: c!, dataType: datatypeSet(datatypes: datatypes), token: token)
+      result(true)
+		} else {
+			result(FlutterError(
+				code: "Connection Type Error",
+				message: "Could not call startRealtime. make sure you are passing a valid iOS connection and that terraRT is initialised by calling 'init'",
+				details: nil
+			))
+		}
+  }
+
+  private func startRealtime(
+    connection: String,
+    datatypes: [String], 
+    result: @escaping FlutterResult
+  ){
+    let c = connectionParse(connection: connection)
+		if c != nil && terraRT != nil {
+      terraRT!.startRealtime(type: c!, dataType: datatypeSet(datatypes: datatypes)){
+        update in self.callChannel(update: update)
+      }
       result(true)
 		} else {
 			result(FlutterError(
@@ -129,7 +184,19 @@ public class SwiftTerraFlutterRtPlugin: NSObject, FlutterPlugin {
   private func startBluetoothScan(result: @escaping FlutterResult){
 		if terraRT != nil {
       // todo: show BLE SwiftUI screen on iOS
-      result(true)
+      let child = UIHostingController(rootView: terraRT!.startBluetoothScan(type: .BLE, callback: {
+      success in
+        // if let viewWithTag = self.mainview.viewWithTag(100) {
+        //   print("Removing")
+        //   viewWithTag.removeFromSuperview()
+        //   print("View removed")
+        // }
+        result(success)
+      }))
+      child.view.translatesAutoresizingMaskIntoConstraints = false
+      child.view.frame = mainview.bounds
+      child.view.tag = 100
+      mainview.addSubview(child.view)
 		} else {
 			result(FlutterError(
 				code: "Dependency error",
@@ -139,52 +206,84 @@ public class SwiftTerraFlutterRtPlugin: NSObject, FlutterPlugin {
 		}
   }
 
-  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+  private func callChannel(update: Update){
+    do {
+      let jsonData = try JSONEncoder().encode(update)
+      let data = String(data: jsonData, encoding: .utf8) ?? ""
+      _methodChannel.invokeMethod("update", arguments: data)
+    }
+    catch {
+      print("Could not parse json")
+    }
+  }
+
+  func onMethodCall(call: FlutterMethodCall, result: @escaping FlutterResult) {
     guard let args_op = call.arguments else {
 			result("ERROR")
 			return
 		}
 		let args = args_op as! [String: Any]
 		switch call.method {
-				case "getPlatformVersion":
-					result("iOS " + UIDevice.current.systemVersion)
-					break;
-				case "init":
-					terraRT = TerraRT()
-          result(true)
-					break;
-        case "initConnection":
-          initConnection(
-            connection: args["connection"] as! String,
-						result: result
-          )
-          break
-        case "startRealtime":
-          startRealtime(
-            connection: args["connection"] as! String,
-            token: args["token"] as! String,
-						datatypes: args["datatypes"] as! [String],
-            result: result
-          )
-          break;
-        case "stopRealtime":
-          stopRealtime(
-            connection: args["connection"] as! String,
-						result: result
-          )
-          break;
-        case "disconnect":
-          disconnect(
-            connection: args["connection"] as! String,
-						result: result
-          )
-        case "startBluetoothScan":
-          startBluetoothScan(
-						result: result
-          )
-          break;
-				default:
-					result(FlutterMethodNotImplemented)
+      case "getPlatformVersion":
+        result("iOS " + UIDevice.current.systemVersion)
+        break;
+      case "init":
+        terraRT = TerraRT(
+          devId: args["devId"] as! String,
+          referenceId: args["referenceId"] as? String ?? ""
+        ){
+          success in 
+            result(success)
+        }
+        break;
+      case "initConnection":
+        initConnection(
+          token: args["token"] as! String,
+          result: result
+        )
+        break
+      case "startRealtimeToServer":
+        startRealtime(
+          connection: args["connection"] as! String,
+          token: args["token"] as! String,
+          datatypes: args["datatypes"] as! [String],
+          result: result
+        )
+        break;
+      case "startRealtimeToApp":
+        startRealtime(
+          connection: args["connection"] as! String,
+          datatypes: args["datatypes"] as! [String],
+          result: result
+        )
+        break;
+      case "stopRealtime":
+        stopRealtime(
+          connection: args["connection"] as! String,
+          result: result
+        )
+        break;
+      case "disconnect":
+        disconnect(
+          connection: args["connection"] as! String,
+          result: result
+        )
+      case "startBluetoothScan":
+        startBluetoothScan(
+          result: result
+        )
+        break;
+      default:
+        result(FlutterMethodNotImplemented)
 		}
+  }
+}
+
+public class SwiftTerraFlutterRtPlugin: NSObject, FlutterPlugin {
+  public static func register(with registrar: FlutterPluginRegistrar) {
+    let channel = FlutterMethodChannel(name: "terra_flutter_rt", binaryMessenger: registrar.messenger())
+    let instance = SwiftTerraFlutterRtPlugin()
+    registrar.addMethodCallDelegate(instance, channel: channel)
+    registrar.register(iOSScanViewFactory(messenger: registrar.messenger()), withId: "terra_flutter_rt")
   }
 }
