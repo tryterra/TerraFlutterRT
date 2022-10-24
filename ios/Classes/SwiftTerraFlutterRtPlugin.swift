@@ -101,15 +101,15 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
   }
 
 
-  private func initConnection(connection: String, result: @escaping FlutterResult){
-    let c = connectionParse(connection: connection)
-		if c != nil && terraRT != nil {
-      terraRT!.initConnection(type: c!)
-      result(true)
+  private func initConnection(token: String, result: @escaping FlutterResult){
+		if terraRT != nil {
+      terraRT!.initConnection(token: token){
+        success in result(true)
+      }
 		} else {
 			result(FlutterError(
 				code: "Connection Type Error",
-				message: "Could not call initConnection. make sure you are passing a valid iOS connection and that terraRT is initialised by calling 'init'",
+				message: "Could not call initConnection. make sure that terraRT is initialised by calling 'init'",
 				details: nil
 			))
 		}
@@ -123,8 +123,29 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
   ){
     let c = connectionParse(connection: connection)
 		if c != nil && terraRT != nil {
-      print("Should be streaming now for \(connection)")
-      terraRT!.startRealtime(type: c!, token: token, dataType: datatypeSet(datatypes: datatypes))
+      print("Should be streaming now to server for \(connection) and \(datatypeSet(datatypes: datatypes))")
+      terraRT!.startRealtime(type: c!, dataType: datatypeSet(datatypes: datatypes), token: token)
+      result(true)
+		} else {
+			result(FlutterError(
+				code: "Connection Type Error",
+				message: "Could not call startRealtime. make sure you are passing a valid iOS connection and that terraRT is initialised by calling 'init'",
+				details: nil
+			))
+		}
+  }
+
+  private func startRealtime(
+    connection: String,
+    datatypes: [String], 
+    result: @escaping FlutterResult
+  ){
+    let c = connectionParse(connection: connection)
+		if c != nil && terraRT != nil {
+      print("Should be streaming now in app for \(connection) and \(datatypeSet(datatypes: datatypes))")
+      terraRT!.startRealtime(type: c!, dataType: datatypeSet(datatypes: datatypes)){
+        update in self.callChannel(update: update)
+      }
       result(true)
 		} else {
 			result(FlutterError(
@@ -189,6 +210,21 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
 		}
   }
 
+  private func callChannel(update: Update){
+    do {
+      print("attempting json parsing")
+      let jsonData = try JSONEncoder().encode(update)
+      let data = String(data: jsonData, encoding: .utf8) ?? ""
+      print("Sending data to app: \(data)")
+      _methodChannel.invokeMethod("update", arguments: data, result: {(r:Any?) -> () in
+        print(type(of: r))
+      })
+    }
+    catch {
+      print("Could not parse json")
+    }
+  }
+
   func onMethodCall(call: FlutterMethodCall, result: @escaping FlutterResult) {
     guard let args_op = call.arguments else {
 			result("ERROR")
@@ -200,22 +236,33 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
         result("iOS " + UIDevice.current.systemVersion)
         break;
       case "init":
+        print("Initialising")
         terraRT = TerraRT(
           devId: args["devId"] as! String,
-          referenceId: args["referenceId"] as? String
-        )
-        result(true)
+          referenceId: args["referenceId"] as? String ?? ""
+        ){
+          success in 
+            result(success)
+            print("Initialised")
+        }
         break;
       case "initConnection":
         initConnection(
-          connection: args["connection"] as! String,
+          token: args["token"] as! String,
           result: result
         )
         break
-      case "startRealtime":
+      case "startRealtimeToServer":
         startRealtime(
           connection: args["connection"] as! String,
           token: args["token"] as! String,
+          datatypes: args["datatypes"] as! [String],
+          result: result
+        )
+        break;
+      case "startRealtimeToApp":
+        startRealtime(
+          connection: args["connection"] as! String,
           datatypes: args["datatypes"] as! [String],
           result: result
         )

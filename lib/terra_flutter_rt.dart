@@ -97,6 +97,7 @@ class TerraFlutterRt {
 
   static Future<bool?> init(String devId, String? referenceId) async {
     _channel.setMethodCallHandler(myUtilsHandler);
+    _iOSScanController._channel.setMethodCallHandler(myUtilsHandler);
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
         return await _iOSScanController._channel
@@ -209,6 +210,7 @@ class TerraFlutterRt {
   static Future<dynamic> myUtilsHandler(MethodCall methodCall) async {
     switch (methodCall.method) {
       case 'update':
+        print('Update got called');
         if (_callback != null) {
           _callback!(methodCall.arguments);
         }

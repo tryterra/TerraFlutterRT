@@ -92,13 +92,14 @@ class _MyAppState extends State<MyApp> {
       await TerraFlutterRt.startAntPlusScan();
     }
     // // Start streaming either to server (using token) or locally (using callback)
-    // await TerraFlutterRt.startRealtimeToApp(
-    //     connection, datatypes, dataCallback);
-    await TerraFlutterRt.startRealtimeToServer(
-        connection, datatypes, websockettoken);
+    print("Starting streaming");
+    await TerraFlutterRt.startRealtimeToApp(
+      connection, datatypes, dataCallback);
+    // await TerraFlutterRt.startRealtimeToServer(connection, datatypes, websockettoken);
     await Future.delayed(const Duration(seconds: 15));
 
     // // After 15 seconds stop streaming and disconnect
+    print("Stopping streaming");
     await TerraFlutterRt.stopRealtime(connection);
     await TerraFlutterRt.disconnect(connection);
   }

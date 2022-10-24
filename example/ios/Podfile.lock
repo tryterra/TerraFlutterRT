@@ -2,8 +2,8 @@ PODS:
   - Flutter (1.0.0)
   - terra_flutter_rt (0.0.1):
     - Flutter
-    - TerraRTiOS (~> 0.0.2)
-  - TerraRTiOS (0.0.2)
+    - TerraRTiOS (~> 0.0.4)
+  - TerraRTiOS (0.0.4)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
@@ -21,8 +21,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
-  terra_flutter_rt: da01a9221a190f7e8d748824910d39a5276eb1f3
-  TerraRTiOS: 69fb586adf0079a629028682173e963c2ddd6ade
+  terra_flutter_rt: 5c6e1aef6c82df2c6c4f10eac8574846be7e2460
+  TerraRTiOS: 83d6fa2d213c51d745d74fcf40fa66c5e1134b4d
 
 PODFILE CHECKSUM: cc1f88378b4bfcf93a6ce00d2c587857c6008d3b
 
