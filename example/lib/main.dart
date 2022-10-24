@@ -86,6 +86,7 @@ class _MyAppState extends State<MyApp> {
     // // For BLE or WearOS connection, pull scanning widget to select a device
     if (connection == Connection.ble || connection == Connection.wearOs) {
       await TerraFlutterRt.startBluetoothScan(connection);
+      await Future.delayed(const Duration(seconds: 1));
     }
     // // For ANT connection scan to select device
     if (connection == Connection.ant) {
@@ -96,9 +97,9 @@ class _MyAppState extends State<MyApp> {
     await TerraFlutterRt.startRealtimeToApp(
       connection, datatypes, dataCallback);
     // await TerraFlutterRt.startRealtimeToServer(connection, datatypes, websockettoken);
-    await Future.delayed(const Duration(seconds: 15));
 
-    // // After 15 seconds stop streaming and disconnect
+    // After 15 seconds stop streaming and disconnect
+    await Future.delayed(const Duration(seconds: 15));
     print("Stopping streaming");
     await TerraFlutterRt.stopRealtime(connection);
     await TerraFlutterRt.disconnect(connection);
