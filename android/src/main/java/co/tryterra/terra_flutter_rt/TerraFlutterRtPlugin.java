@@ -3,6 +3,8 @@ package co.tryterra.terra_flutter_rt;
 import androidx.annotation.NonNull;
 
 import android.content.Context;
+import android.os.Looper;
+import android.os.Handler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,8 +24,11 @@ import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import co.tryterra.terrartandroid.TerraRT;
 import co.tryterra.terrartandroid.enums.Connections;
 import co.tryterra.terrartandroid.enums.DataTypes;
+import co.tryterra.terrartandroid.models.Update;
 
 import kotlin.Unit;
+
+import com.google.gson.Gson;
 
 /** TerraFlutterRtPlugin */
 public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware {
@@ -38,6 +43,8 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
 
   public TerraRT terraRT;
 
+  private Gson gson = new Gson();
+
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     binaryMessenger = flutterPluginBinding.getBinaryMessenger();
@@ -51,20 +58,13 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
   }
 
   @Override
-  public void onDetachedFromActivityForConfigChanges() {
-
-  }
+  public void onDetachedFromActivityForConfigChanges() {}
 
   @Override
-  public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
-
-  }
+  public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {}
 
   @Override
-  public void onDetachedFromActivity() {
-
-  }
-
+  public void onDetachedFromActivity() {}
 
   private Connections parseConnection(String connection) {
     switch (connection) {
@@ -74,8 +74,6 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
         return Connections.ANT;
       case "BLE":
         return Connections.BLE;
-      case "GOOGLE_FIT":
-        return Connections.GOOGLE_FIT;
       case "WEAR_OS":
         return Connections.WEAR_OS;
     }
@@ -114,19 +112,16 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
   }
 
   private void initConnection(
-    String connection,
+    String token,
     Result result
   ) {
-    if (parseConnection(connection) == null) {
-      result.error("Connection Failure", "Invalid Connection has been passed for the android platform", null);
-      return;
-    }
     this.terraRT.initConnection(
-      Objects.requireNonNull(parseConnection(connection)),
-      Objects.requireNonNull(this.context),
-      new HashSet<>()
+      token,
+      (success) -> {
+        result.success(success);
+        return Unit.INSTANCE;
+      }
     );
-    result.success(true);
   }
 
   private void startRealtime(
@@ -152,6 +147,40 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
       Objects.requireNonNull(parseConnection(connection)),
       token,
       parsedDatatypes
+    );
+    result.success(true);
+  }
+
+  private void startRealtime(
+    String connection,
+    ArrayList<String> datatypes,
+    Result result
+  ) {
+    if (parseConnection(connection) == null) {
+      result.error("Connection Failure", "Invalid Connection has been passed for the android platform", null);
+      return;
+    }
+
+    HashSet<DataTypes> parsedDatatypes = new HashSet<>();
+    for (Object datatype: datatypes) {
+        if (datatype == null) {
+            continue;
+        }
+        parsedDatatypes.add(parseDatatype((String) datatype));
+    }
+
+    this.terraRT.startRealtime(
+      Objects.requireNonNull(parseConnection(connection)),
+      parsedDatatypes,
+      (success) -> {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+          @Override
+          public void run() {
+            callChannel(success);
+          }
+        });
+        return Unit.INSTANCE;
+      }
     );
     result.success(true);
   }
@@ -206,6 +235,17 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
     );
   }
 
+  private void callChannel(Object a){
+    this.channel.invokeMethod("update", gson.toJson(a), new Result() {
+      @Override
+      public void success(Object o) {}
+      @Override
+      public void error(String s, String s1, Object o) {}
+      @Override
+      public void notImplemented() {}
+    });
+  }
+
   @Override
   public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
     switch (call.method) {
@@ -214,20 +254,32 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
         break;
       case "init":
         this.terraRT = new TerraRT (
-          Objects.requireNonNull(this.context)
+          call.argument("devId"),
+          Objects.requireNonNull(this.context),
+          call.argument("referenceId"),
+          (success) -> {
+            result.success(success);
+            return Unit.INSTANCE;
+          }
         );
-        result.success(true);
         break;
       case "initConnection":
         initConnection(
-          call.argument("connection"),
+          call.argument("token"),
           result
         );
         break;
-      case "startRealtime":
+      case "startRealtimeToServer":
         startRealtime(
           call.argument("connection"),
           call.argument("token"),
+          call.argument("datatypes"),
+          result
+        );
+        break;
+      case "startRealtimeToApp":
+        startRealtime(
+          call.argument("connection"),
           call.argument("datatypes"),
           result
         );

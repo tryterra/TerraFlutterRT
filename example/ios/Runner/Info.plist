@@ -6,6 +6,8 @@
 	<string>Motion usage description</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>BLE usage description</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>BLE peripheral usage description</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
