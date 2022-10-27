@@ -181,10 +181,10 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
 		}
   }
 
-  private func startBluetoothScan(result: @escaping FlutterResult){
+  private func startBluetoothScan(useCache: Bool, result: @escaping FlutterResult){
 		if terraRT != nil {
       // todo: show BLE SwiftUI screen on iOS
-      let child = UIHostingController(rootView: terraRT!.startBluetoothScan(type: .BLE, callback: {
+      let child = UIHostingController(rootView: terraRT!.startBluetoothScan(type: .BLE, bluetoothLowEnergyFromCache: useCache, callback: {
       success in
         // if let viewWithTag = self.mainview.viewWithTag(100) {
         //   print("Removing")
@@ -270,6 +270,7 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
         )
       case "startBluetoothScan":
         startBluetoothScan(
+          useCache: args["useCache"] as! Bool,
           result: result
         )
         break;

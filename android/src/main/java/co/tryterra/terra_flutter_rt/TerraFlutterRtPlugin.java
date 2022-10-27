@@ -220,6 +220,7 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
 
   private void startBluetoothScan(
     String connection,
+    boolean useCache,
     Result result
   ) {
     if (parseConnection(connection) == null) {
@@ -228,6 +229,7 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
     }
     this.terraRT.startBluetoothScan(
       Objects.requireNonNull(parseConnection(connection)),
+      useCache,
       (success) -> {
         result.success(success);
         return Unit.INSTANCE;
@@ -299,6 +301,7 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
       case "startBluetoothScan":
         startBluetoothScan(
           call.argument("connection"),
+          call.argument("useCache"),
           result
         );
         break;

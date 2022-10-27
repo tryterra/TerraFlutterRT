@@ -86,11 +86,14 @@ class _MyAppState extends State<MyApp> {
 
     // // Initialise the library
     await TerraFlutterRt.init(devId, "reference_id_flutter");
+    await Future.delayed(const Duration(seconds: 1));
     // // Need to run this once only to register the device with Terra
     await TerraFlutterRt.initConnection(sdktoken);
+    await Future.delayed(const Duration(seconds: 1));
     // // For BLE or WearOS connection, pull scanning widget to select a device
     if (connection == Connection.ble || connection == Connection.wearOs) {
-      await TerraFlutterRt.startBluetoothScan(connection);
+      await TerraFlutterRt.startBluetoothScan(connection, useCache: true);
+      await Future.delayed(const Duration(seconds: 1));
     }
     // // For ANT connection scan to select device
     if (connection == Connection.ant) {
@@ -101,8 +104,8 @@ class _MyAppState extends State<MyApp> {
     await TerraFlutterRt.startRealtimeToApp(
         connection, datatypes, dataCallback);
     // await TerraFlutterRt.startRealtimeToServer(
-    // connection, datatypes, websockettoken);
-
+    //     connection, datatypes, websockettoken);
+    print("We are streaming");
     // After 15 seconds stop streaming and disconnect
     await Future.delayed(const Duration(seconds: 15));
     print("Stopping streaming");
