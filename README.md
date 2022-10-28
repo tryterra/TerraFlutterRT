@@ -39,6 +39,13 @@ The first time ever you want to use the package, you need to register the device
 await TerraFlutterRt.initConnection(sdktoken);
 ```
 
+and then get the user id using `getUserId`
+
+```dart
+const userId = await TerraFlutterRt.getUserId();
+```
+
+
 The packages support streaming from the following wearable types:
 
 ```dart
@@ -77,6 +84,12 @@ For BLE connections, you can pull a BLE scanning UI for the user to select a dev
 if (connection == Connection.ble || connection == Connection.wearOs) {
     await TerraFlutterRt.startBluetoothScan(connection);
 }
+```
+
+you can optionally cache the devices. If set to true, this options will not pull the BLE scan screen if one of the cached devices is found:
+
+```dart
+await TerraFlutterRt.startBluetoothScan(connection, useCache: true);
 ```
 
 The same applies to ANT devices:

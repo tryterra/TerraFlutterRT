@@ -111,7 +111,7 @@ class Update {
   Update.fromJson(Map<String, dynamic> json)
       : ts = json['ts'],
         type = datatypeTyped(json['type']),
-        val = json.containsKey('val') ? json['val'] : null,
+        val = json.containsKey('val') ? (json['val']).toDouble() : null,
         d = json.containsKey('d')
             ? (json['d'] as List).map((i) => i as double).toList()
             : null;

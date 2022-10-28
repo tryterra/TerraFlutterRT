@@ -41,34 +41,9 @@ class _MyAppState extends State<MyApp> {
   Future<void> initPlatformState() async {
     const apiKey = '';
     const devId = '';
+    var headers = {'x-api-key': apiKey, 'dev-id': devId};
     const connection = Connection.ble;
     const datatypes = [DataType.heartRate];
-
-    // sdk and websocket tokens (DO THIS IN YOUR BACKEND)
-    var sdktoken = '';
-    var websockettoken = '';
-    var headers = {'x-api-key': apiKey, 'dev-id': devId};
-    var websocketrequest = http.Request(
-        'POST', Uri.parse('https://ws.tryterra.co/auth/user?id=<USERID>'));
-    var sdkrequest = http.Request(
-        'POST', Uri.parse('https://api.tryterra.co/v2/auth/generateAuthToken'));
-    websocketrequest.headers.addAll(headers);
-    http.StreamedResponse websocketresponse = await websocketrequest.send();
-    if (websocketresponse.statusCode == 200) {
-      websockettoken =
-          json.decode(await websocketresponse.stream.bytesToString())['token'];
-      print(websockettoken);
-    } else {
-      print(websocketresponse.reasonPhrase);
-    }
-    sdkrequest.headers.addAll(headers);
-    http.StreamedResponse sdkresponse = await sdkrequest.send();
-    if (sdkresponse.statusCode == 200) {
-      sdktoken = json.decode(await sdkresponse.stream.bytesToString())['token'];
-      print(sdktoken);
-    } else {
-      print(sdkresponse.reasonPhrase);
-    }
 
     // Platform version - visual state confirmation
     String platformVersion;
@@ -84,28 +59,49 @@ class _MyAppState extends State<MyApp> {
       _platformVersion = platformVersion;
     });
 
-    // // Initialise the library
+    // Initialise the library
     await TerraFlutterRt.init(devId, "reference_id_flutter");
-    // // Need to run this once only to register the device with Terra
-    await TerraFlutterRt.initConnection(sdktoken);
-    // // For BLE or WearOS connection, pull scanning widget to select a device
-    if (connection == Connection.ble || connection == Connection.wearOs) {
-      await TerraFlutterRt.startBluetoothScan(connection);
+
+    // Need to run this once only to register the device with Terra
+    // sdk token (DO THIS IN YOUR BACKEND)
+    var sdktoken = '';
+    var sdkrequest = http.Request(
+        'POST', Uri.parse('https://api.tryterra.co/v2/auth/generateAuthToken'));
+    sdkrequest.headers.addAll(headers);
+    http.StreamedResponse sdkresponse = await sdkrequest.send();
+    if (sdkresponse.statusCode == 200) {
+      sdktoken = json.decode(await sdkresponse.stream.bytesToString())['token'];
     }
-    // // For ANT connection scan to select device
+    await TerraFlutterRt.initConnection(sdktoken);
+
+    // If streaming to websocket, need a websocket token
+    var websockettoken = '';
+    var userId = await TerraFlutterRt.getUserId();
+    var websocketrequest = http.Request(
+        'POST', Uri.parse('https://ws.tryterra.co/auth/user?id=' + userId!));
+    websocketrequest.headers.addAll(headers);
+    http.StreamedResponse websocketresponse = await websocketrequest.send();
+    if (websocketresponse.statusCode == 200) {
+      websockettoken =
+          json.decode(await websocketresponse.stream.bytesToString())['token'];
+    }
+
+    // For BLE or WearOS connection, pull scanning widget to select a device
+    if (connection == Connection.ble || connection == Connection.wearOs) {
+      await TerraFlutterRt.startBluetoothScan(connection, useCache: true);
+    }
+    // For ANT connection scan to select device
     if (connection == Connection.ant) {
       await TerraFlutterRt.startAntPlusScan();
     }
-    // // Start streaming either to server (using token) or locally (using callback)
-    print("Starting streaming");
-    await TerraFlutterRt.startRealtimeToApp(
-        connection, datatypes, dataCallback);
-    // await TerraFlutterRt.startRealtimeToServer(
-    // connection, datatypes, websockettoken);
+    // Start streaming either to server (using token) or locally (using callback)
+    // await TerraFlutterRt.startRealtimeToApp(
+    //     connection, datatypes, dataCallback);
+    await TerraFlutterRt.startRealtimeToServer(
+        connection, datatypes, websockettoken);
 
     // After 15 seconds stop streaming and disconnect
     await Future.delayed(const Duration(seconds: 15));
-    print("Stopping streaming");
     await TerraFlutterRt.stopRealtime(connection);
     await TerraFlutterRt.disconnect(connection);
   }
