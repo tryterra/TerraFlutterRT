@@ -114,6 +114,18 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
 		}
   }
 
+  private func getUserId(result: @escaping FlutterResult){
+		if terraRT != nil {
+      result(terraRT!.getUserid())
+		} else {
+			result(FlutterError(
+				code: "Connection Type Error",
+				message: "Could not call getUserId. make sure that terraRT is initialised by calling 'init'",
+				details: nil
+			))
+		}
+  }
+
   private func startRealtime(
     connection: String,
     token: String,
@@ -262,6 +274,9 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
           connection: args["connection"] as! String,
           result: result
         )
+        break;
+      case "getUserId":
+        getUserId(result: result)
         break;
       case "disconnect":
         disconnect(

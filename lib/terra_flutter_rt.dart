@@ -36,7 +36,7 @@ class TerraFlutterRt {
         return await _channel
             .invokeMethod('init', {"devId": devId, "referenceId": referenceId});
       default:
-        return false;
+        return null;
     }
   }
 
@@ -48,7 +48,7 @@ class TerraFlutterRt {
       case TargetPlatform.android:
         return await _channel.invokeMethod('initConnection', {"token": token});
       default:
-        return false;
+        return null;
     }
   }
 
@@ -69,7 +69,7 @@ class TerraFlutterRt {
           "datatypes": types.map((t) => t.datatypeString).toList()
         });
       default:
-        return false;
+        return null;
     }
   }
 
@@ -89,7 +89,7 @@ class TerraFlutterRt {
           "datatypes": types.map((t) => t.datatypeString).toList()
         });
       default:
-        return false;
+        return null;
     }
   }
 
@@ -102,7 +102,7 @@ class TerraFlutterRt {
         return await _channel.invokeMethod(
             'stopRealtime', {"connection": connection.connectionString});
       default:
-        return false;
+        return null;
     }
   }
 
@@ -115,7 +115,18 @@ class TerraFlutterRt {
         return await _channel.invokeMethod(
             'disconnect', {"connection": connection.connectionString});
       default:
-        return false;
+        return null;
+    }
+  }
+
+  static Future<String?> getUserId() async {
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+        return await _iOSScanController.channel.invokeMethod('getUserId', {});
+      case TargetPlatform.android:
+        return await _channel.invokeMethod('getUserId', {});
+      default:
+        return null;
     }
   }
 
@@ -135,7 +146,7 @@ class TerraFlutterRt {
         await Future.delayed(const Duration(seconds: 1));
         return output;
       default:
-        return false;
+        return null;
     }
   }
 

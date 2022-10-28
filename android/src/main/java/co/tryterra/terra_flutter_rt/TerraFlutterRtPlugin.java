@@ -292,6 +292,9 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
           result
         );
         break;
+      case "getUserId":
+        result.success(this.terraRT.getUserId());
+        break;
       case "disconnect":
         disconnect(
           call.argument("connection"),

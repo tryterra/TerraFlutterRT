@@ -15,7 +15,7 @@ A new flutter plugin project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'TerraRTiOS', '~> 0.0.5'
+  s.dependency 'TerraRTiOS', '~> 0.0.6'
   s.frameworks = ['HealthKit']
 
   s.platform = :ios, '13.0'
