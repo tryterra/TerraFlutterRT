@@ -78,25 +78,21 @@ const connection = Connection.ble;
 const datatypes = [DataType.heartRate];
 ```
 
-For BLE connections, you can pull a BLE scanning UI for the user to select a device:
+For BLE connections and ANT+, you can pull a scanning UI for the user to select a device:
 
 ```dart
-if (connection == Connection.ble || connection == Connection.wearOs) {
-    await TerraFlutterRt.startBluetoothScan(connection);
-}
+if (connection == Connection.ble ||
+        connection == Connection.wearOs ||
+        connection == Connection.ant ||
+        connection == Connection.allDevices) {
+      await TerraFlutterRt.startDeviceScan(connection);
+    }
 ```
 
-you can optionally cache the devices. If set to true, this options will not pull the BLE scan screen if one of the cached devices is found:
+you can optionally cache the devices. If set to true, this options will not pull the scan screen if one of the cached devices is found:
 
 ```dart
-await TerraFlutterRt.startBluetoothScan(connection, useCache: true);
-```
-
-The same applies to ANT devices:
-```dart
-if (connection == Connection.ant) {
-    await TerraFlutterRt.startAntPlusScan();
-}
+await TerraFlutterRt.startDeviceScan(connection, useCache: true);
 ```
 
 With the device and dataypes set, you can now start streaming. To stream locally in your app directly, you can pass a callback function that will get triggered with the data:
