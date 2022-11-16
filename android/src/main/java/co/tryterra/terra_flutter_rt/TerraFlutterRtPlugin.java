@@ -76,6 +76,8 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
         return Connections.BLE;
       case "WEAR_OS":
         return Connections.WEAR_OS;
+      case "ALL_DEVICES":
+        return Connections.ALL_DEVICES;
     }
     return null;
   }
@@ -209,16 +211,7 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
     result.success(true);
   }
 
-  private void startAntPlusScan(Result result) {
-    this.terraRT.startAntPlusScan(
-      (success) -> {
-        result.success(success);
-        return Unit.INSTANCE;
-      }
-    );
-  }
-
-  private void startBluetoothScan(
+  private void startDeviceScan(
     String connection,
     boolean useCache,
     Result result
@@ -227,7 +220,7 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
       result.error("Connection Failure", "Invalid Connection has been passed for the android platform", null);
       return;
     }
-    this.terraRT.startBluetoothScan(
+    this.terraRT.startDeviceScan(
       Objects.requireNonNull(parseConnection(connection)),
       useCache,
       (success) -> {
@@ -301,15 +294,10 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
           result
         );
         break;
-      case "startBluetoothScan":
-        startBluetoothScan(
+      case "startDeviceScan":
+        startDeviceScan(
           call.argument("connection"),
           call.argument("useCache"),
-          result
-        );
-        break;
-      case "startAntPlusScan":
-        startAntPlusScan(
           result
         );
         break;

@@ -54,6 +54,8 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
 				return Connections.APPLE
 			case "BLE":
 				return Connections.BLE
+      case "ALL_DEVICES":
+				return Connections.BLE
 			default:
 				print("Passed invalid connection")
 		}

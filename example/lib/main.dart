@@ -42,7 +42,7 @@ class _MyAppState extends State<MyApp> {
     const apiKey = '';
     const devId = '';
     var headers = {'x-api-key': apiKey, 'dev-id': devId};
-    const connection = Connection.ble;
+    const connection = Connection.allDevices;
     const datatypes = [DataType.heartRate];
 
     // Platform version - visual state confirmation
@@ -87,18 +87,18 @@ class _MyAppState extends State<MyApp> {
     }
 
     // For BLE or WearOS connection, pull scanning widget to select a device
-    if (connection == Connection.ble || connection == Connection.wearOs) {
-      await TerraFlutterRt.startBluetoothScan(connection, useCache: true);
+    if (connection == Connection.ble ||
+        connection == Connection.wearOs ||
+        connection == Connection.ant ||
+        connection == Connection.allDevices) {
+      await TerraFlutterRt.startDeviceScan(connection, useCache: true);
     }
-    // For ANT connection scan to select device
-    if (connection == Connection.ant) {
-      await TerraFlutterRt.startAntPlusScan();
-    }
+
     // Start streaming either to server (using token) or locally (using callback)
-    // await TerraFlutterRt.startRealtimeToApp(
-    //     connection, datatypes, dataCallback);
-    await TerraFlutterRt.startRealtimeToServer(
-        connection, datatypes, websockettoken);
+    await TerraFlutterRt.startRealtimeToApp(
+        connection, datatypes, dataCallback);
+    // await TerraFlutterRt.startRealtimeToServer(
+    //     connection, datatypes, websockettoken);
 
     // After 15 seconds stop streaming and disconnect
     await Future.delayed(const Duration(seconds: 15));
