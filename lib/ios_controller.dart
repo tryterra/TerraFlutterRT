@@ -5,8 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 class iOSScanController {
-  iOSScanController.init(int id)
-      : channel = MethodChannel('terra_flutter_rt_$id');
+  iOSScanController.init(int _id)
+      : channel = const MethodChannel('terra_flutter_rt_0');
 
   final MethodChannel channel;
 }
@@ -21,7 +21,7 @@ class iOSScanView extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
-        return const Expanded(child: UiKitView(viewType: 'terra_flutter_rt'));
+        return Expanded(child: UiKitView(viewType: 'terra_flutter_rt_0'));
 
       default:
         return Container();

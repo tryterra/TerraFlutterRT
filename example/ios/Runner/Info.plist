@@ -10,6 +10,8 @@
 	<string>BLE peripheral usage description</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
 	<key>CFBundleDisplayName</key>
 	<string>Terra Flutter Rt</string>
 	<key>CFBundleExecutable</key>
@@ -48,6 +50,10 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<true/>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 </dict>
 </plist>

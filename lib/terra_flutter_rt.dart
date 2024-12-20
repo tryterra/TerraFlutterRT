@@ -7,12 +7,14 @@ import 'package:terra_flutter_rt/types.dart';
 import 'package:terra_flutter_rt/ios_controller.dart';
 
 typedef UpdateCallback = void Function(Update);
+typedef DeviceCallback = void Function(Device);
 final iOSScanController _iOSScanController = iOSScanController.init(0);
 
 class TerraFlutterRt {
   static UpdateCallback? _callback;
+  static DeviceCallback? _deviceCallback;
   static const MethodChannel _channel = MethodChannel('terra_flutter_rt');
-
+  
   static Future<String?> get platformVersion async {
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
@@ -150,6 +152,39 @@ class TerraFlutterRt {
     }
   }
 
+  static Future<bool?> startDeviceScanToCallback(Connection connection, DeviceCallback deviceCallback) async{
+    _deviceCallback = deviceCallback;
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+        return await _iOSScanController.channel
+            .invokeMethod('startDeviceScanWithCallback', {
+          "connection": connection.connectionString
+        });
+      case TargetPlatform.android:
+        return await _channel.invokeMethod('startDeviceScanWithCallback', {
+          "connection": connection.connectionString
+        });
+      default:
+        return null;
+    }
+  }
+
+  static Future<bool?> connectDevice(Device device) async{
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+        return await _iOSScanController.channel
+            .invokeMethod('connectDevice', {
+          "deviceName": device.deviceName
+        });
+      case TargetPlatform.android:
+        return await _channel.invokeMethod('connectDevice', {
+          "deviceName": device.deviceName
+        });
+      default:
+        return null;
+    }
+  }
+
   static Future<dynamic> myUtilsHandler(MethodCall methodCall) async {
     switch (methodCall.method) {
       case 'update':
@@ -157,6 +192,13 @@ class TerraFlutterRt {
           Map<String, dynamic> updateMap = jsonDecode(methodCall.arguments);
           var update = Update.fromJson(updateMap);
           _callback!(update);
+        }
+        return true;
+      case 'device':
+        if (_deviceCallback != null){
+          Map<String, dynamic> deviceMap = jsonDecode(methodCall.arguments);
+          var device = Device.fromJson(deviceMap);
+          _deviceCallback!(device);
         }
         return true;
       default:

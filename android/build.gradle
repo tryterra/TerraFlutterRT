@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.0'
+        classpath "com.android.tools.build:gradle:7.2.1"
     }
 }
 
@@ -22,7 +22,7 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 32
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -30,11 +30,14 @@ android {
     }
 
     defaultConfig {
+        multiDexEnabled true
         minSdkVersion 28
     }
 
     dependencies {
-        implementation 'co.tryterra:terra-rtandroid:0.3.1'
+        def multidex_version = "2.0.1"
+        implementation "androidx.multidex:multidex:$multidex_version"
+        implementation 'co.tryterra:terra-rtandroid:0.4.9'
         implementation 'com.google.code.gson:gson:2.9.0'
     }
 }

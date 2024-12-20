@@ -21,6 +21,26 @@ void dataCallback(Update data) {
   print(data.d);
 }
 
+void deviceCallback(Device d) async{
+  print("Device found");
+  print(d.deviceName);
+  //print(d.deviceId);
+  if (d.deviceName == "WHOOP 4A0834169"){
+    bool? connect = await TerraFlutterRt.connectDevice(d);
+    print(connect);
+    const connection = Connection.ble;
+    const datatypes = [DataType.heartRate];
+    await TerraFlutterRt.startRealtimeToApp(
+    connection, datatypes, dataCallback);
+    // await TerraFlutterRt.startRealtimeToServer(
+    //     connection, datatypes, websockettoken);
+
+    // After 15 seconds stop streaming and disconnect
+    await Future.delayed(const Duration(seconds: 15));
+    await TerraFlutterRt.stopRealtime(connection);
+    await TerraFlutterRt.disconnect(connection);
+  }
+}
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -42,9 +62,9 @@ class _MyAppState extends State<MyApp> {
     const apiKey = '';
     const devId = '';
     var headers = {'x-api-key': apiKey, 'dev-id': devId};
-    const connection = Connection.allDevices;
+    const connection = Connection.ble;
     const datatypes = [DataType.heartRate];
-
+    
     // Platform version - visual state confirmation
     String platformVersion;
     try {
@@ -58,7 +78,8 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _platformVersion = platformVersion;
     });
-
+  
+  
     // Initialise the library
     await TerraFlutterRt.init(devId, "reference_id_flutter");
 
@@ -72,6 +93,7 @@ class _MyAppState extends State<MyApp> {
     if (sdkresponse.statusCode == 200) {
       sdktoken = json.decode(await sdkresponse.stream.bytesToString())['token'];
     }
+
     await TerraFlutterRt.initConnection(sdktoken);
 
     // If streaming to websocket, need a websocket token
@@ -91,19 +113,10 @@ class _MyAppState extends State<MyApp> {
         connection == Connection.wearOs ||
         connection == Connection.ant ||
         connection == Connection.allDevices) {
-      await TerraFlutterRt.startDeviceScan(connection, useCache: true);
+      await TerraFlutterRt.startDeviceScan(connection);
     }
 
     // Start streaming either to server (using token) or locally (using callback)
-    await TerraFlutterRt.startRealtimeToApp(
-        connection, datatypes, dataCallback);
-    // await TerraFlutterRt.startRealtimeToServer(
-    //     connection, datatypes, websockettoken);
-
-    // After 15 seconds stop streaming and disconnect
-    await Future.delayed(const Duration(seconds: 15));
-    await TerraFlutterRt.stopRealtime(connection);
-    await TerraFlutterRt.disconnect(connection);
   }
 
   @override
@@ -116,7 +129,7 @@ class _MyAppState extends State<MyApp> {
         body: Center(
           child: Column(
             // iOSScanView() is required since apple doesn't have context access
-            children: [Text('Running on: $_platformVersion\n'), iOSScanView()],
+            children: [Text('Running on: $_platformVersion\n'),  iOSScanView()],
           ),
         ),
       ),

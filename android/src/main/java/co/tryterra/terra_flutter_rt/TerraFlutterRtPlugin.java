@@ -7,6 +7,7 @@ import android.os.Looper;
 import android.os.Handler;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
@@ -25,6 +26,7 @@ import co.tryterra.terrartandroid.TerraRT;
 import co.tryterra.terrartandroid.enums.Connections;
 import co.tryterra.terrartandroid.enums.DataTypes;
 import co.tryterra.terrartandroid.models.Update;
+import co.tryterra.terrartandroid.Device;
 
 import kotlin.Unit;
 
@@ -43,6 +45,7 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
 
   public TerraRT terraRT;
 
+  private static HashMap<String, Device> deviceMap = new HashMap<>();
   private Gson gson = new Gson();
 
   @Override
@@ -148,7 +151,10 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
     this.terraRT.startRealtime(
       Objects.requireNonNull(parseConnection(connection)),
       token,
-      parsedDatatypes
+      parsedDatatypes,
+      (ignored) -> {
+        return Unit.INSTANCE;
+      }
     );
     result.success(true);
   }
@@ -223,6 +229,7 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
     this.terraRT.startDeviceScan(
       Objects.requireNonNull(parseConnection(connection)),
       useCache,
+      true,
       (success) -> {
         result.success(success);
         return Unit.INSTANCE;
@@ -230,8 +237,60 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
     );
   }
 
+  private void connectDevice(
+    String deviceName,
+    Result result
+  ){
+    Device device = deviceMap.get(deviceName);
+
+    if (device == null){
+      result.success(false);
+      return;
+    }
+
+    this.terraRT.connectDevice(device, (success) -> {
+      result.success(success);
+      return Unit.INSTANCE;
+    });
+  }
+
+  private void startDeviceScan(
+    String connection,
+    Result result
+  ){
+    if (parseConnection(connection) == null) {
+      result.error("Connection Failure", "Invalid Connection has been passed for the android platform", null);
+      return;
+    }
+    this.terraRT.startDeviceScan(
+      Objects.requireNonNull(parseConnection(connection)),
+      (Device device) -> {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+          @Override
+          public void run() {
+            deviceMap.put(device.getDeviceName(), device);
+            deviceChannel(device);
+          }
+        });
+        return Unit.INSTANCE;
+      }
+    );
+    result.success(true);
+  }
+
   private void callChannel(Object a){
     this.channel.invokeMethod("update", gson.toJson(a), new Result() {
+      @Override
+      public void success(Object o) {}
+      @Override
+      public void error(String s, String s1, Object o) {}
+      @Override
+      public void notImplemented() {}
+    });
+  }
+
+  private void deviceChannel(Object a){
+    this.channel.invokeMethod("device", gson.toJson(a), new Result() {
       @Override
       public void success(Object o) {}
       @Override
@@ -301,6 +360,18 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
           result
         );
         break;
+      case "startDeviceScanWithCallback":
+          startDeviceScan(
+            call.argument("connection"),
+            result
+          );
+          break;
+      case "connectDevice":
+          connectDevice(
+            call.argument("deviceName"),
+            result
+          );
+          break;
       default:
         result.notImplemented();
         break;

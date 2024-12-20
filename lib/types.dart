@@ -118,3 +118,14 @@ class Update {
             ? (json['d'] as List).map((i) => i as double).toList()
             : null;
 }
+
+class Device {
+  final String deviceId;
+  final String deviceName;
+
+  Device(this.deviceId, this.deviceName);
+
+  Device.fromJson(Map<String, dynamic> json)
+      : deviceId = json["deviceId"],
+        deviceName = json["deviceName"];
+}

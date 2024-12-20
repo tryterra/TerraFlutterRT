@@ -1,3 +1,3 @@
-## 0.0.1
-
-* TODO: Describe initial release.
+## 0.2.0
+- Update native iOS and Android SDK
+- Resolve unimplemented methods for iOS plugin
