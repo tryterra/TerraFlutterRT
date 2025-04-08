@@ -29,6 +29,7 @@ import co.tryterra.terrartandroid.models.Update;
 import co.tryterra.terrartandroid.Device;
 
 import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 
 import com.google.gson.Gson;
 
@@ -48,6 +49,50 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
   private static HashMap<String, Device> deviceMap = new HashMap<>();
   private Gson gson = new Gson();
 
+  private static boolean connectResultCalled = false;
+  private static boolean connectDeviceResultCalled = false;
+
+  private static class InitCallback implements Function1<Boolean, Unit> {
+    private final Result result;
+  
+    InitCallback(Result result) {
+      this.result = result;
+    }
+  
+    @Override
+    public Unit invoke(Boolean success) {
+      result.success(success);
+      return Unit.INSTANCE;
+    }
+  }
+
+  private static class StartRealtimeCallback implements Function1<Boolean, Unit> {
+    @Override
+    public Unit invoke(Boolean ignored) {
+      return Unit.INSTANCE;
+    }
+  }
+
+  private class ConnectDeviceCallback implements Function1<Boolean, Unit> {
+    private final Result result;
+    private boolean resultCalled;
+  
+    ConnectDeviceCallback(Result result, boolean resultCalled) {
+      this.result = result;
+      this.resultCalled = resultCalled;
+    }
+  
+    @Override
+    public Unit invoke(Boolean success) {
+      if (!resultCalled) {
+        result.success(success);
+        resultCalled = true;
+      }
+      new Handler(Looper.getMainLooper()).post(() -> connectionChannel(success));
+      return Unit.INSTANCE;
+    }
+  }  
+  
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     binaryMessenger = flutterPluginBinding.getBinaryMessenger();
@@ -122,10 +167,7 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
   ) {
     this.terraRT.initConnection(
       token,
-      (success) -> {
-        result.success(success);
-        return Unit.INSTANCE;
-      }
+      new InitCallback(result)
     );
   }
 
@@ -152,9 +194,7 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
       Objects.requireNonNull(parseConnection(connection)),
       token,
       parsedDatatypes,
-      (ignored) -> {
-        return Unit.INSTANCE;
-      }
+      new StartRealtimeCallback()
     );
     result.success(true);
   }
@@ -230,10 +270,7 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
       Objects.requireNonNull(parseConnection(connection)),
       useCache,
       true,
-      (success) -> {
-        result.success(success);
-        return Unit.INSTANCE;
-      }
+      new ConnectDeviceCallback(result, connectResultCalled)
     );
   }
 
@@ -248,10 +285,7 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
       return;
     }
 
-    this.terraRT.connectDevice(device, (success) -> {
-      result.success(success);
-      return Unit.INSTANCE;
-    });
+    this.terraRT.connectDevice(device, new ConnectDeviceCallback(result, connectDeviceResultCalled));
   }
 
   private void startDeviceScan(
@@ -278,26 +312,27 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
     result.success(true);
   }
 
+  private static class EmptyResultCallback implements MethodChannel.Result {
+    @Override
+    public void success(Object result) {}
+
+    @Override
+    public void error(String errorCode, String errorMessage, Object errorDetails) {}
+
+    @Override
+    public void notImplemented() {}
+  }
+
   private void callChannel(Object a){
-    this.channel.invokeMethod("update", gson.toJson(a), new Result() {
-      @Override
-      public void success(Object o) {}
-      @Override
-      public void error(String s, String s1, Object o) {}
-      @Override
-      public void notImplemented() {}
-    });
+    this.channel.invokeMethod("update", gson.toJson(a), new EmptyResultCallback());
   }
 
   private void deviceChannel(Object a){
-    this.channel.invokeMethod("device", gson.toJson(a), new Result() {
-      @Override
-      public void success(Object o) {}
-      @Override
-      public void error(String s, String s1, Object o) {}
-      @Override
-      public void notImplemented() {}
-    });
+    this.channel.invokeMethod("device", gson.toJson(a), new EmptyResultCallback());
+  }
+
+  private void connectionChannel(Boolean a) {
+    this.channel.invokeMethod("connection", String.valueOf(a), new EmptyResultCallback());
   }
 
   @Override

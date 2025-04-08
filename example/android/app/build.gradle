@@ -40,6 +40,7 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         minSdkVersion 28
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -49,6 +50,7 @@ android {
             signingConfig signingConfigs.debug
         }
     }
+    namespace "co.tryterra.terra_flutter_rt_example"
 }
 
 flutter {

@@ -21,6 +21,11 @@ void dataCallback(Update data) {
   print(data.d);
 }
 
+void connectionCallback(bool connected) {
+  print("Connection status changed");
+  print(connected);
+}
+
 void deviceCallback(Device d) async{
   print("Device found");
   print(d.deviceName);
@@ -113,7 +118,10 @@ class _MyAppState extends State<MyApp> {
         connection == Connection.wearOs ||
         connection == Connection.ant ||
         connection == Connection.allDevices) {
-      await TerraFlutterRt.startDeviceScan(connection);
+      await TerraFlutterRt.startDeviceScan(connection, connectionCallback: (p0) {
+        print("Connection status changed");
+        print(p0);
+      });
     }
 
     // Start streaming either to server (using token) or locally (using callback)

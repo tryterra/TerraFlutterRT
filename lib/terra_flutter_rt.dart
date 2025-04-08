@@ -8,11 +8,13 @@ import 'package:terra_flutter_rt/ios_controller.dart';
 
 typedef UpdateCallback = void Function(Update);
 typedef DeviceCallback = void Function(Device);
+typedef ConnectionCallback = void Function(bool);
 final iOSScanController _iOSScanController = iOSScanController.init(0);
 
 class TerraFlutterRt {
   static UpdateCallback? _callback;
   static DeviceCallback? _deviceCallback;
+  static ConnectionCallback? _connectionCallback;
   static const MethodChannel _channel = MethodChannel('terra_flutter_rt');
   
   static Future<String?> get platformVersion async {
@@ -133,7 +135,8 @@ class TerraFlutterRt {
   }
 
   static Future<bool?> startDeviceScan(Connection connection,
-      {bool useCache = false}) async {
+      {bool useCache = false, ConnectionCallback? connectionCallback}) async {
+    _connectionCallback = connectionCallback;
     bool? output;
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
@@ -152,8 +155,9 @@ class TerraFlutterRt {
     }
   }
 
-  static Future<bool?> startDeviceScanToCallback(Connection connection, DeviceCallback deviceCallback) async{
+  static Future<bool?> startDeviceScanToCallback(Connection connection, DeviceCallback deviceCallback, {ConnectionCallback? connectionCallback}) async{
     _deviceCallback = deviceCallback;
+    _connectionCallback = connectionCallback;
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
         return await _iOSScanController.channel
@@ -199,6 +203,12 @@ class TerraFlutterRt {
           Map<String, dynamic> deviceMap = jsonDecode(methodCall.arguments);
           var device = Device.fromJson(deviceMap);
           _deviceCallback!(device);
+        }
+        return true;
+      case 'connection':
+        if (_connectionCallback != null) {
+          bool connected = methodCall.arguments;
+          _connectionCallback!(connected);
         }
         return true;
       default:

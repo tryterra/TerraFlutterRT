@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "com.android.tools.build:gradle:7.2.1"
+        classpath 'com.android.tools.build:gradle:7.4.2'
     }
 }
 
@@ -23,10 +23,11 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 32
-
+    namespace "co.tryterra.terra_flutter_rt"
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
     }
 
     defaultConfig {
@@ -39,5 +40,6 @@ android {
         implementation "androidx.multidex:multidex:$multidex_version"
         implementation 'co.tryterra:terra-rtandroid:0.4.9'
         implementation 'com.google.code.gson:gson:2.9.0'
+        coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
     }
 }
