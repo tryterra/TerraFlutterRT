@@ -1,3 +1,11 @@
+## 0.2.2
+- Added WatchOS Connection Functions on iOS Side
+  - connectWithWatchOS
+  - resumeWatchOSWorkout
+  - pauseWatchOSWorkout
+  - stopWatcbOSWorkout
+
+
 ## 0.2.1
 - Resolve result.success called multiple times from Android
 

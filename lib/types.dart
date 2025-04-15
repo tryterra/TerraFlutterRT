@@ -1,4 +1,4 @@
-enum Connection { ble, apple, wearOs, android, ant, allDevices }
+enum Connection { ble, apple, wearOs, android, ant, watchOs, allDevices }
 
 extension ConnectionExtension on Connection {
   String get connectionString {
@@ -13,6 +13,8 @@ extension ConnectionExtension on Connection {
         return 'BLE';
       case Connection.wearOs:
         return 'WEAR_OS';
+      case Connection.watchOs:
+        return 'WATCH_OS';
       case Connection.allDevices:
         return 'ALL_DEVICES';
       default:

@@ -2,12 +2,13 @@ PODS:
   - Flutter (1.0.0)
   - terra_flutter_rt (0.0.1):
     - Flutter
-    - TerraRTiOS (~> 0.3.8)
-  - TerraRTiOS (0.3.8)
+    - TerraRTiOS (~> 0.3.9)
+  - TerraRTiOS (0.3.9)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - terra_flutter_rt (from `.symlinks/plugins/terra_flutter_rt/ios`)
+  - TerraRTiOS
 
 SPEC REPOS:
   trunk:
@@ -21,9 +22,9 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  terra_flutter_rt: 4d503a2bd0b799ae3164f867b622c5df6ecd718e
-  TerraRTiOS: 19483c5cd22a3dd1921484a5cd0d8a45ae1bdb8e
+  terra_flutter_rt: 509b8de35f5a00589583a2787bda7e952feba133
+  TerraRTiOS: bcc925d3eee61dbe3b621424c8ba96a9ed044449
 
-PODFILE CHECKSUM: cc1f88378b4bfcf93a6ce00d2c587857c6008d3b
+PODFILE CHECKSUM: f97c733b679e4740c06341defad4a65dd0aba49a
 
-COCOAPODS: 1.13.0
+COCOAPODS: 1.16.2

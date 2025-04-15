@@ -14,13 +14,16 @@ A new flutter plugin project.
   s.author           = { 'JaafarRammal' => 'jaafar@tryterra.co' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
+  s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  s.dependency 'TerraRTiOS', '~> 0.3.8'
+  s.dependency 'TerraRTiOS', '~> 0.3.9'
   s.frameworks = ['HealthKit']
 
-  s.platform = :ios, '13.0'
+  s.platform         = :ios, '13.0'
+  s.watchos.deployment_target = '8.0'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
   s.swift_version = '5.0'
+  s.static_framework = true
 end

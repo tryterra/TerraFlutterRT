@@ -67,7 +67,7 @@ class _MyAppState extends State<MyApp> {
     const apiKey = '';
     const devId = '';
     var headers = {'x-api-key': apiKey, 'dev-id': devId};
-    const connection = Connection.ble;
+    const connection = Connection.watchOs;
     const datatypes = [DataType.heartRate];
     
     // Platform version - visual state confirmation
@@ -124,6 +124,16 @@ class _MyAppState extends State<MyApp> {
       });
     }
 
+    if (connection == Connection.watchOs) {
+      var connectWatchOSResp = await TerraFlutterRt.connectWatchOS();
+      print("Connect watchOS response");
+      if (connectWatchOSResp) { 
+        print("Successfully paired Apple Watch!");
+        // Can start streaming for watch side with watch app.
+        await TerraFlutterRt.startRealtimeToApp(
+            connection, datatypes, dataCallback);
+      }
+    }
     // Start streaming either to server (using token) or locally (using callback)
   }
 

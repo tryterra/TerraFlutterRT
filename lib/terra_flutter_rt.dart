@@ -29,6 +29,10 @@ class TerraFlutterRt {
     }
   }
 
+/// ================================
+/// SDK Initialisation Methods
+/// ================================
+
   static Future<bool?> init(String devId, String? referenceId) async {
     _channel.setMethodCallHandler(myUtilsHandler);
     _iOSScanController.channel.setMethodCallHandler(myUtilsHandler);
@@ -55,6 +59,10 @@ class TerraFlutterRt {
         return null;
     }
   }
+
+/// ================================
+/// Streaming and Connection Methods
+/// ================================
 
   static Future<bool?> startRealtimeToServer(
       Connection connection, List<DataType> types, String token) async {
@@ -189,6 +197,57 @@ class TerraFlutterRt {
     }
   }
 
+/// ================================
+/// Watch OS (Apple Watch) Only Methods
+/// ================================
+
+  static Future<bool> connectWatchOS() async {
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+        return await _iOSScanController.channel
+            .invokeMethod('connectWatchOS', {});
+      default:
+        // N.B Not available for Android!
+        return false;
+    }
+  }
+
+  static Future<bool> resumeWatchOSWorkout() async {
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+        return await _iOSScanController.channel
+            .invokeMethod('resumeWatchOSWorkout', {});
+      default:
+        // N.B Not available for Android!
+        return false;
+    }
+  }
+
+  static Future<bool> pauseWatchOSWorkout() async {
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+        return await _iOSScanController.channel
+            .invokeMethod('pauseWatchOSWorkout', {});
+      default:
+        // N.B Not available for Android!
+        return false;
+    }
+  }
+
+  static Future<bool> stopWatchOSWorkout() async {
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+        return await _iOSScanController.channel
+            .invokeMethod('endWatchOSWorkout', {});
+      default:
+        // N.B Not available for Android!
+        return false;
+    }
+  }
+
+/// ================================
+/// End of exposed methods
+/// ================================
   static Future<dynamic> myUtilsHandler(MethodCall methodCall) async {
     switch (methodCall.method) {
       case 'update':

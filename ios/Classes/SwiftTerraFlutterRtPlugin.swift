@@ -68,6 +68,8 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
 				return Connections.BLE
       case "ALL_DEVICES":
 				return Connections.BLE
+      case "WATCH_OS":
+        return Connections.WATCH_OS
 			default:
 				print("Passed invalid connection")
 		}
@@ -266,6 +268,70 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
       }
   }
 
+  private func _connectWatchOS(result: @escaping FlutterResult){
+    guard let terraRT = terraRT else {
+      result(FlutterError(
+				code: "Dependency error",
+				message: "Could not call connect to WatchOS. make sure that terraRT is initialised by calling 'init'",
+				details: nil
+			))
+      return
+    }
+
+    do {
+      try terraRT.connectWithWatchOS()
+      result(true)
+    }
+    catch {
+      result(false)
+    }
+  }
+
+  private func _resumeWatchOSWorkout(result: @escaping FlutterResult){
+    guard let terraRT = terraRT else {
+      result(FlutterError(
+        code: "Dependency error",
+        message: "Could not call resumeWatchOSWorkout. make sure that terraRT is initialised by calling 'init'",
+        details: nil
+      ))
+      return
+    }
+
+    terraRT.resumeWatchOSWorkout {success in
+      result(success)
+    }
+  }
+
+  private func _pauseWatchOSWorkout(result: @escaping FlutterResult){
+    guard let terraRT = terraRT else {
+      result(FlutterError(
+        code: "Dependency error",
+        message: "Could not call pauseWatchOSWorkout. make sure that terraRT is initialised by calling 'init'",
+        details: nil
+      ))
+      return
+    }
+
+    terraRT.pauseWatchOSWorkout {success in
+      result(success)
+    }
+  }
+
+  private func _stopWatchOSWorkout(result: @escaping FlutterResult){
+    guard let terraRT = terraRT else {
+      result(FlutterError(
+        code: "Dependency error",
+        message: "Could not call stopWatchOSWorkout. make sure that terraRT is initialised by calling 'init'",
+        details: nil
+      ))
+      return
+    }
+
+    terraRT.stopWatchOSWorkout {success in
+      result(success)
+    }
+  }
+
   private func callChannel(update: Update){
     do {
       let jsonData = try JSONEncoder().encode(update)
@@ -360,6 +426,18 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
           device: args["deviceName"] as! String,
           result: result
         )
+        break;
+      case "connectWatchOS":
+        _connectWatchOS(result: result)
+        break;
+      case "resumeWatchOSWorkout":
+        _resumeWatchOSWorkout(result: result)
+        break;
+      case "pauseWatchOSWorkout":
+        _pauseWatchOSWorkout(result: result)
+        break;
+      case "stopWatchOSWorkout":
+        _stopWatchOSWorkout(result: result)
         break;
       default:
         result(FlutterMethodNotImplemented)

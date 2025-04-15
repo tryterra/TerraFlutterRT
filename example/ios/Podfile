@@ -34,8 +34,22 @@ target 'Runner' do
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
 
+target 'WatchApp' do
+  platform :watchos, '8.0'
+  use_frameworks!
+
+  pod 'TerraRTiOS', :modular_headers => true
+end
+
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    
+    target.build_configurations.each do |config|
+      if ['terra_flutter_rt'].include? target.name
+        config.build_settings['EXCLUDED_ARCHS[sdk=watchsimulator*]'] = 'arm64 i386 x86_64'
+        config.build_settings['EXCLUDED_ARCHS[sdk=watchos*]'] = 'arm64_32 arm64'
+      end
+    end
   end
 end
