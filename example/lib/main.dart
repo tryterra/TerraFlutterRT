@@ -12,8 +12,11 @@ import 'dart:convert';
 void main() {
   runApp(const MyApp());
 }
+final ValueNotifier<String> dataValNotifier = ValueNotifier<String>('---');
 
 void dataCallback(Update data) {
+  dataValNotifier.value = '${data.val}'; 
+
   print("Got data in app");
   print(data.ts);
   print(data.type.datatypeString);
@@ -141,13 +144,30 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
+        appBar: AppBar(title: const Text('Plugin example app')),
         body: Center(
           child: Column(
-            // iOSScanView() is required since apple doesn't have context access
-            children: [Text('Running on: $_platformVersion\n'),  iOSScanView()],
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Running on: $_platformVersion\n'),
+
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blueAccent),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: ValueListenableBuilder<String>(
+                  valueListenable: dataValNotifier,
+                  builder: (context, value, _) =>
+                      Text('Latest value: $value',
+                          style: const TextStyle(fontSize: 16)),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+              iOSScanView(),
+            ],
           ),
         ),
       ),

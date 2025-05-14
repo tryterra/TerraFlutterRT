@@ -20,18 +20,23 @@ struct ContentView: View {
         VStack{
             ScrollView{
                 Button("Connect", action: {
+                    t!.connect()
                     t!.stopStream()
                     t!.setWorkoutStateListener{x in print(x)}
                 }).padding()
                     Button("Stream HR", action: {
-                        t!.startStream(forDataTypes: Set([.HEART_RATE, .STEPS, .DISTANCE, .ACCELERATION, .GYROSCOPE])) { _,_  in
+                        t!.startStream(forDataTypes: Set([.HEART_RATE])) { _,_  in
                             //
                         }
                     }).padding()
                     Button("Start Run", action: {
+                        t!.connect()
                         t!.startExercise(forType: .RUNNING, completion: {s, e in
                             print(s, e)
                         })
+                        t!.startStream(forDataTypes: Set([.HEART_RATE])) { _,_  in
+                            //
+                        }
                     }).padding()
                     Button("Stop Run", action: {
                         t!.stopExercise(completion: {_, e in

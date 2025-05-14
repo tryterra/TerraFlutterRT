@@ -14,49 +14,58 @@ public struct Device_: Codable  {
     let deviceUUID: String
 }
 
+public class SwiftTerraFlutterRtPlugin: NSObject, FlutterPlugin {
+    private static let channelName = "terra_flutter_rt_0"
+    private var scanView: FlutteriOSScanView!
+
+    public static func register(with registrar: FlutterPluginRegistrar) {
+        let channel = FlutterMethodChannel(name: channelName,
+                                           binaryMessenger: registrar.messenger())
+        let instance = SwiftTerraFlutterRtPlugin(channel: channel)
+
+        registrar.addMethodCallDelegate(instance, channel: channel)
+        registrar.register(
+            iOSScanViewFactory(scanView: instance.scanView),
+            withId: "terra_flutter_rt_0"
+        )
+    }
+
+
+    private init(channel: FlutterMethodChannel) {
+        super.init()
+        self.scanView = FlutteriOSScanView(channel: channel)
+    }
+
+    public func handle(_ call: FlutterMethodCall,
+                       result: @escaping FlutterResult) {
+        scanView.onMethodCall(call: call, result: result)
+    }
+}
+
 class iOSScanViewFactory: NSObject, FlutterPlatformViewFactory {
-  private var messenger: FlutterBinaryMessenger
+  private let sharedScanView: FlutteriOSScanView
+  init(scanView: FlutteriOSScanView) { self.sharedScanView = scanView }
 
-  init(messenger: FlutterBinaryMessenger) {
-    self.messenger = messenger
-    super.init()
-  }
-
-  func create(
-    withFrame frame: CGRect,
+  func create(withFrame frame: CGRect,
     viewIdentifier viewId: Int64,
-    arguments args: Any?
-  ) -> FlutterPlatformView {
-    return FlutteriOSScanView(
-      frame: frame,
-      viewIdentifier: viewId,
-      arguments: args,
-      binaryMessenger: messenger)
+    arguments args: Any?) -> FlutterPlatformView {
+    sharedScanView
   }
 }
+
 class FlutteriOSScanView: NSObject, FlutterPlatformView {
-  private var _methodChannel: FlutterMethodChannel
   
-  private var mainview: UIView
+  private let mainview = UIView()
   var scoreLabel = UILabel()
 
-  func view() -> UIView {
-    return mainview
-  }
+  func view() -> UIView { mainview }
+  private let channel: FlutterMethodChannel       
 
-  private static var deviceMap: [String: Device] = [:]
-  
-  init(
-    frame: CGRect,
-    viewIdentifier viewId: Int64,
-    arguments args: Any?,
-    binaryMessenger messenger: FlutterBinaryMessenger
-  ) {
-    mainview = UIView()
-    _methodChannel = FlutterMethodChannel(name: "terra_flutter_rt_0", binaryMessenger: messenger)
-    super.init()
-    _methodChannel.setMethodCallHandler(onMethodCall)
+  init(channel: FlutterMethodChannel) {           
+      self.channel = channel
+      super.init()
   }
+  private static var deviceMap: [String: Device] = [:]
 
   private var terraRT: TerraRT?
 
@@ -155,7 +164,7 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
 		} else {
 			result(FlutterError(
 				code: "Connection Type Error",
-				message: "Could not call startRealtime. make sure you are passing a valid iOS connection and that terraRT is initialised by calling 'init'",
+				message: "Could not call startRealtime. make sure you are passing a valid connection and that terraRT is initialised by calling 'init'",
 				details: nil
 			))
 		}
@@ -175,7 +184,7 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
 		} else {
 			result(FlutterError(
 				code: "Connection Type Error",
-				message: "Could not call startRealtime. make sure you are passing a valid iOS connection and that terraRT is initialised by calling 'init'",
+				message: "Could not call startRealtime. make sure you are passing a valid connection and that terraRT is initialised by calling 'init'",
 				details: nil
 			))
 		}
@@ -203,7 +212,7 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
 		} else {
 			result(FlutterError(
 				code: "Connection Type Error",
-				message: "Could not call disconnect. make sure you are passing a valid iOS connection and that terraRT is initialised by calling 'init'",
+				message: "Could not call disconnect. make sure you are passing a valid connection and that terraRT is initialised by calling 'init'",
 				details: nil
 			))
 		}
@@ -332,27 +341,24 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
     }
   }
 
-  private func callChannel(update: Update){
+
+  private func callChannel(update: Update) {
     do {
-      let jsonData = try JSONEncoder().encode(update)
-      let data = String(data: jsonData, encoding: .utf8) ?? ""
-      _methodChannel.invokeMethod("update", arguments: data)
-    }
-    catch {
-      print("Could not parse json")
-    }
+      let data = try JSONEncoder().encode(update)
+      self.channel.invokeMethod("update",
+      arguments: String(data: data, encoding: .utf8))
+    } catch { print("Could not serialise update") }
   }
 
-  private func deviceCallChannel(device: Device){
+  private func deviceCallChannel(device: Device) {
     do {
-      let _device = Device_(device.deviceName, device.deviceUUID)
-      let jsonData = try JSONEncoder().encode(_device)
-      let data = String(data: jsonData, encoding: .utf8) ?? ""
-      _methodChannel.invokeMethod("device", arguments: data)
-    }
-    catch {
-      print("Could not parse json")
-    }
+      let payload = try JSONEncoder().encode(
+        Device_(device.deviceName, device.deviceUUID)
+      )
+      self.channel.invokeMethod("device",
+      arguments: String(data: payload,
+      encoding: .utf8))
+    } catch { print("Could not serialise device") }
   }
 
   func onMethodCall(call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -444,35 +450,3 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
 		}
   }
 }
-
-public class SwiftTerraFlutterRtPlugin: NSObject, FlutterPlugin {
-  private var scanView: FlutteriOSScanView?
-
-    public static func register(with registrar: FlutterPluginRegistrar) {
-        let channel = FlutterMethodChannel(name: "terra_flutter_rt_0", binaryMessenger: registrar.messenger())
-        let instance = SwiftTerraFlutterRtPlugin()
-        registrar.addMethodCallDelegate(instance, channel: channel)
-        let factory = iOSScanViewFactory(messenger: registrar.messenger())
-        registrar.register(factory, withId: "terra_flutter_rt_0")
-
-        instance.scanView = FlutteriOSScanView(
-            frame: .zero,
-            viewIdentifier: 0,
-            arguments: nil,
-            binaryMessenger: registrar.messenger()
-        )
-    }
-
-    public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        guard let scanView = scanView else {
-            result(FlutterError(
-                code: "ViewNotInitialized",
-                message: "FlutteriOSScanView is not initialized",
-                details: nil
-            ))
-            return
-        }
-        scanView.onMethodCall(call: call, result: result)
-    }
-}
-

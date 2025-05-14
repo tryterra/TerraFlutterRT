@@ -16,7 +16,7 @@ A new flutter plugin project.
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  s.dependency 'TerraRTiOS', '~> 0.3.9'
+  s.dependency 'TerraRTiOS', '~> 0.3.10'
   s.frameworks = ['HealthKit']
 
   s.platform         = :ios, '13.0'

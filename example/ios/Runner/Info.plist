@@ -2,16 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSMotionUsageDescription</key>
-	<string>Motion usage description</string>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>BLE usage description</string>
-	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>BLE peripheral usage description</string>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>io.flutter.embedded_views_preview</key>
-	<true/>
 	<key>CFBundleDisplayName</key>
 	<string>Terra Flutter Rt</string>
 	<key>CFBundleExecutable</key>
@@ -32,6 +26,14 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>BLE usage description</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>BLE peripheral usage description</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Motion usage description</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -51,9 +53,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<key>WKCompanionAppBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>io.flutter.embedded_views_preview</key>
 	<true/>
 </dict>
 </plist>

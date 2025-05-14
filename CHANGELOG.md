@@ -1,3 +1,7 @@
+## 0.2.3
+- Update native iOS SDK to 0.3.10
+
+
 ## 0.2.2
 - Added WatchOS Connection Functions on iOS Side
   - connectWithWatchOS
