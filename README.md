@@ -33,7 +33,7 @@ Everytime your app opens, you need to initialise the library:
 await TerraFlutterRt.init(devId, "reference_id");
 ```
 
-The first time ever you want to use the package, you need to register the device with Terra using `initConnection`. You can generate an SDK token from [here](https://docs.tryterra.co/reference/generate-authentication-token) using your Terra dev credentatials:
+The first time ever you want to use the package, you need to register the device with Terra using `initConnection`. You can generate an SDK token from [here](https://docs.tryterra.co/reference#post-auth-generateauthtoken) using your Terra dev credentatials:
 
 ```dart
 await TerraFlutterRt.initConnection(sdktoken);
@@ -118,7 +118,7 @@ Example payloads:
 {"d":[1.373291015625E-4,-3.96728515625E-4,-1.068115234375E-4],"ts":"2022-10-24T09:20:27.985Z","type":"GYROSCOPE"}
 ```
 
-To stream to your server using Websockets, you need a websocket token generated from [here](https://docs.tryterra.co/reference/generate-user-token):
+To stream to your server using Websockets, you need a websocket token generated from [here](https://docs.tryterra.co/reference#post-auth-generateauthtoken):
 
 ```dart
 await TerraFlutterRt.startRealtimeToServer(connection, datatypes, websockettoken);
