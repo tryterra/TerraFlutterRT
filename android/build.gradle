@@ -38,7 +38,7 @@ android {
     dependencies {
         def multidex_version = "2.0.1"
         implementation "androidx.multidex:multidex:$multidex_version"
-        implementation 'co.tryterra:terra-rtandroid:0.4.9'
+        implementation 'co.tryterra:terra-rtandroid:0.4.11'
         implementation 'com.google.code.gson:gson:2.9.0'
         coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
     }
