@@ -270,9 +270,14 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
           DispatchQueue.main.async {
               let child = UIHostingController(rootView: scanView)
               child.view.translatesAutoresizingMaskIntoConstraints = false
-              child.view.frame = self.mainview.bounds
               child.view.tag = 100
               self.mainview.addSubview(child.view)
+              NSLayoutConstraint.activate([
+                  child.view.topAnchor.constraint(equalTo: self.mainview.topAnchor),
+                  child.view.bottomAnchor.constraint(equalTo: self.mainview.bottomAnchor),
+                  child.view.leadingAnchor.constraint(equalTo: self.mainview.leadingAnchor),
+                  child.view.trailingAnchor.constraint(equalTo: self.mainview.trailingAnchor),
+              ])
           }
       }
   }
