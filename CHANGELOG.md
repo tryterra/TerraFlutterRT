@@ -1,3 +1,10 @@
+## 0.2.5
+- iOS: dispatch platform-channel messages on the main thread, fixing a "non-platform thread" error and stalled streaming when connecting a BLE device
+- iOS: fix the built-in scanner view (iOSScanView) rendering black on a second scan
+
+## 0.2.4
+- Update native SDK pins
+
 ## 0.2.3
 - Update native iOS SDK to 0.3.10
 
