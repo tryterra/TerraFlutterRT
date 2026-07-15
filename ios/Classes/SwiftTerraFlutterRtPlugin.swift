@@ -57,6 +57,7 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
   
   private let mainview = UIView()
   var scoreLabel = UILabel()
+  private var scanHostingController: UIViewController?
 
   func view() -> UIView { mainview }
   private let channel: FlutterMethodChannel       
@@ -268,7 +269,12 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
           }
 
           DispatchQueue.main.async {
+              self.scanHostingController?.view.removeFromSuperview()
+              self.mainview.subviews
+                  .filter { $0.tag == 100 }
+                  .forEach { $0.removeFromSuperview() }
               let child = UIHostingController(rootView: scanView)
+              self.scanHostingController = child
               child.view.translatesAutoresizingMaskIntoConstraints = false
               child.view.tag = 100
               self.mainview.addSubview(child.view)
