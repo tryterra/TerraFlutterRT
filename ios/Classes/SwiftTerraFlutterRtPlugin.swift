@@ -239,7 +239,9 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
   private func connectDevice(device: String, result: @escaping FlutterResult){
     if let device = FlutteriOSScanView.deviceMap[device], terraRT != nil{
       terraRT!.connectDevice(device){success in
-        result(success)
+        DispatchQueue.main.async {
+          result(success)
+        }
       }
     }else{
       result(false)
@@ -345,8 +347,10 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
   private func callChannel(update: Update) {
     do {
       let data = try JSONEncoder().encode(update)
-      self.channel.invokeMethod("update",
-      arguments: String(data: data, encoding: .utf8))
+      let json = String(data: data, encoding: .utf8)
+      DispatchQueue.main.async {
+        self.channel.invokeMethod("update", arguments: json)
+      }
     } catch { print("Could not serialise update") }
   }
 
@@ -355,9 +359,10 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
       let payload = try JSONEncoder().encode(
         Device_(device.deviceName, device.deviceUUID)
       )
-      self.channel.invokeMethod("device",
-      arguments: String(data: payload,
-      encoding: .utf8))
+      let json = String(data: payload, encoding: .utf8)
+      DispatchQueue.main.async {
+        self.channel.invokeMethod("device", arguments: json)
+      }
     } catch { print("Could not serialise device") }
   }
 
@@ -376,8 +381,10 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
           devId: args["devId"] as! String,
           referenceId: args["referenceId"] as? String ?? ""
         ){
-          success in 
-            result(success)
+          success in
+            DispatchQueue.main.async {
+              result(success)
+            }
         }
         break;
       case "initConnection":
