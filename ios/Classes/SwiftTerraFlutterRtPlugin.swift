@@ -129,7 +129,7 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
   private func initConnection(token: String, result: @escaping FlutterResult){
 		if terraRT != nil {
       terraRT!.initConnection(token: token){
-        success in result(true)
+        success in result(success)
       }
 		} else {
 			result(FlutterError(
