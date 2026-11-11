@@ -112,6 +112,10 @@ class FlutteriOSScanView: NSObject, FlutterPlatformView {
         return Set([DataTypes.ACCELERATION])
       case "DISTANCE":
         return Set([DataTypes.DISTANCE])
+      case "JUMP_COUNT":
+        // Resolved by raw value so this compiles against native SDKs that
+        // predate JUMP_COUNT; it is simply skipped there.
+        return Set([DataTypes(rawValue: "JUMP_COUNT")].compactMap { $0 })
       default:
         return Set([])
       }

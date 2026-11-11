@@ -156,8 +156,20 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
         return DataTypes.GYROSCOPE;
       case "ACCELERATION":
         return DataTypes.ACCELERATION;
+      case "JUMP_COUNT":
+        // Resolved by name so this compiles against native SDKs that predate
+        // JUMP_COUNT; it is simply skipped there.
+        return dataTypeByName("JUMP_COUNT");
       default:
         return null;
+    }
+  }
+
+  private DataTypes dataTypeByName(String name) {
+    try {
+      return DataTypes.valueOf(name);
+    } catch (IllegalArgumentException e) {
+      return null;
     }
   }
 
@@ -184,10 +196,11 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
 
     HashSet<DataTypes> parsedDatatypes = new HashSet<>();
     for (Object datatype: datatypes) {
-        if (datatype == null) {
+        DataTypes parsed = datatype == null ? null : parseDatatype((String) datatype);
+        if (parsed == null) {
             continue;
         }
-        parsedDatatypes.add(parseDatatype((String) datatype));
+        parsedDatatypes.add(parsed);
     }
 
     this.terraRT.startRealtime(
@@ -211,10 +224,11 @@ public class TerraFlutterRtPlugin implements FlutterPlugin, MethodCallHandler, A
 
     HashSet<DataTypes> parsedDatatypes = new HashSet<>();
     for (Object datatype: datatypes) {
-        if (datatype == null) {
+        DataTypes parsed = datatype == null ? null : parseDatatype((String) datatype);
+        if (parsed == null) {
             continue;
         }
-        parsedDatatypes.add(parseDatatype((String) datatype));
+        parsedDatatypes.add(parsed);
     }
 
     this.terraRT.startRealtime(
