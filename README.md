@@ -67,7 +67,8 @@ enum DataType {
   stepsCadence,
   floorsClimbed,
   gyroscope,
-  acceleration
+  acceleration,
+  jumpCount
 }
 ```
 

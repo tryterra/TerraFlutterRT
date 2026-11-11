@@ -21,7 +21,7 @@ class iOSScanView extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
-        return Expanded(child: UiKitView(viewType: 'terra_flutter_rt_0'));
+        return const Expanded(child: UiKitView(viewType: 'terra_flutter_rt_0'));
 
       default:
         return Container();

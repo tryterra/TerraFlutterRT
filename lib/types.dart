@@ -36,7 +36,8 @@ enum DataType {
   stepsCadence,
   floorsClimbed,
   gyroscope,
-  acceleration
+  acceleration,
+  jumpCount
 }
 
 extension DataTypeExtension on DataType {
@@ -66,6 +67,8 @@ extension DataTypeExtension on DataType {
         return "GYROSCOPE";
       case DataType.acceleration:
         return "ACCELERATION";
+      case DataType.jumpCount:
+        return "JUMP_COUNT";
       default:
         return 'UNDEFINED';
     }
@@ -98,6 +101,8 @@ DataType datatypeTyped(String s) {
       return DataType.gyroscope;
     case "ACCELERATION":
       return DataType.acceleration;
+    case "JUMP_COUNT":
+      return DataType.jumpCount;
     default:
       throw Exception('InvalidType');
   }
